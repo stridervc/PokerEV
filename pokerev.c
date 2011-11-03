@@ -8,35 +8,39 @@
  */
 
 #include <stdio.h>
+#include <string.h>
+#include <ctype.h>
 
 #include "poker_defs.h"
 #include "inlines/eval.h"
 
-void evalSingleTrial(StdDeck_CardMask player1, StdDeck_CardMask player2, StdDeck_CardMask board, 
-	double wins[], int *numberOfTrials);
+void 	evalSingleTrial(StdDeck_CardMask player1, StdDeck_CardMask player2, StdDeck_CardMask board, 
+			double wins[], int *numberOfTrials);
+StdDeck_CardMask	txtToMask(const char *txt);
+void	cleanInput(char *hand);
 
 int main(int argc, char **argv) {
 
-	// Say we start with something like this...
+	// Read two hands from keyboard
+	char 				hand1str[10];
+	char				hand2str[10];
+	StdDeck_CardMask	hand1, hand2;
+
+	printf("Hand 1 : ");
+	scanf("%s", hand1str);
+	cleanInput(hand1str);
+	hand1 = txtToMask(hand1str);
+
+	printf("Hand 2 : ");
+	scanf("%s", hand2str);
+	cleanInput(hand2str);
+	hand2 = txtToMask(hand2str);
+
 	int cardIndex = -1;
 
-	// Player 1 has Ah Ad
-	StdDeck_CardMask player1;
-	StdDeck_stringToCard("Ah", &cardIndex);
-	player1 = StdDeck_MASK(cardIndex);
-	StdDeck_stringToCard("Ad", &cardIndex);
-	StdDeck_CardMask_OR(player1, player1, StdDeck_MASK(cardIndex));
-
-	// Player 2 has 8s9s
-	StdDeck_CardMask player2;
-	StdDeck_stringToCard("8s", &cardIndex);
-	player2 = StdDeck_MASK(cardIndex);
-	StdDeck_stringToCard("9s", &cardIndex);
-	StdDeck_CardMask_OR(player2, player2, StdDeck_MASK(cardIndex));
-	
 	// Dead cards
 	StdDeck_CardMask deadCards;
-	StdDeck_CardMask_OR(deadCards, player1, player2);
+	StdDeck_CardMask_OR(deadCards, hand1, hand2);
 
 	// Keep stats
 	double wins[2] = { 0.0 };
@@ -45,16 +49,16 @@ int main(int argc, char **argv) {
 	// Enumerate all possible 5 card boards
 	StdDeck_CardMask boardCards;
 	DECK_ENUMERATE_5_CARDS_D(StdDeck, boardCards, deadCards, 
-		evalSingleTrial(player1, player2, boardCards, wins, &numberOfTrials); );
+		evalSingleTrial(hand1, hand2, boardCards, wins, &numberOfTrials); );
 
 	// Convert wins to equity
-	double p1Equity = (wins[0] / numberOfTrials) * 100.0;
-	double p2Equity = (wins[1] / numberOfTrials) * 100.0;
+	double h1Equity = (wins[0] / numberOfTrials) * 100.0;
+	double h2Equity = (wins[1] / numberOfTrials) * 100.0;
 
-	printf("Iterations: %d\r\n\r\n", numberOfTrials);
-	printf("           Equity\r\n");
-	printf("Player 1 : %0.4f %% : AhAd\r\n", p1Equity);
-	printf("Player 2 : %0.4f %% : 8s9s\r\n", p2Equity);
+	printf("\r\n");
+	printf("         Equity\r\n");
+	printf("Hand 1 : %0.4f %% : %s\r\n", h1Equity, hand1str);
+	printf("Hand 2 : %0.4f %% : %s\r\n", h2Equity, hand2str);
 
 	return 0;
 }
@@ -80,4 +84,50 @@ void evalSingleTrial(StdDeck_CardMask player1, StdDeck_CardMask player2, StdDeck
 	}
 
 	(*numberOfTrials)++;
+}
+
+
+// Converts plaintext to cardmask
+StdDeck_CardMask	txtToMask(const char *txt) {
+	StdDeck_CardMask	hand;		// the hand to return
+	StdDeck_CardMask	currCard;	// current card mask
+	int					index;		// tmp card index valie
+	char				card[3];
+	int					i = 0;
+
+	StdDeck_CardMask_RESET(hand);
+
+	if (strlen(txt)) {
+		while (txt[i*2] != 0) {
+			card[0] = txt[0+i*2];
+			card[1] = txt[1+i*2];
+			card[2] = 0;
+		
+			// convert card to index value
+			StdDeck_stringToCard(card, &index);
+			// convert index value to mask
+			currCard = StdDeck_MASK(index);
+			// add the card to the hand
+			StdDeck_CardMask_OR(hand, hand, currCard);
+			// move to next card
+			i++;
+		}
+	}
+
+	return hand;
+}
+
+
+// Tidies up user input for a hand
+void	cleanInput(char *hand) {
+	int	i = 0;
+
+	while (hand[i] != 0) {
+		if (i%2 == 0)
+			hand[i] = toupper(hand[i]);
+		else
+			hand[i] = tolower(hand[i]);
+
+		i++;
+	}
 }
