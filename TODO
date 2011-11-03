@@ -1,1 +1,2 @@
-* Using two starting hands, calculate pre-flop EV by iterating over all possible boards
+* Read starting hands from keyboard input
+* Optionally specify starting hands on command line
