@@ -1,10 +1,13 @@
-CC="gcc"
-EXECUTABLE="pokerev"
+CC=gcc
+EXECUTABLE=pokerev
 
 all: pokerev
 
-pokerev: pokerev.c
-	$(CC) pokerev.c -o $(EXECUTABLE)
+pokerev: pokerev.o
+	$(CC) pokerev.o /usr/local/lib/libpoker-eval.a -o $(EXECUTABLE)
+
+pokerev.o: pokerev.c
+	$(CC) -I include -c pokerev.c
 
 clean:
-	rm -f $(EXECUTABLE)
+	rm -f $(EXECUTABLE) pokerev.o
