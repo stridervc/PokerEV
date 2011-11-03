@@ -1,2 +1,2 @@
-* Read starting hands from keyboard input
 * Optionally specify starting hands on command line
+* Read board from user (can be left empty for pre-flop equity)
