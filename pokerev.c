@@ -18,9 +18,9 @@ int main(int argc, char **argv) {
 	int cardIndex = -1;
 
 	StdDeck_CardMask player1;
-	StdDeck_stringToCard("Ah", &cardIndex);
+	StdDeck_stringToCard("9h", &cardIndex);
 	player1 = StdDeck_MASK(cardIndex);
-	StdDeck_stringToCard("Ad", &cardIndex);
+	StdDeck_stringToCard("9d", &cardIndex);
 	StdDeck_CardMask_OR(player1, player1, StdDeck_MASK(cardIndex));
 
 	StdDeck_CardMask player2;
