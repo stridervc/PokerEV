@@ -4,3 +4,8 @@
 * Don't like that you have to type '.' for no board, should just hit enter, but scanf won't allow this. Need to find a better way.
 * Add GPL info
 * Read input from file (Merrit's idea)
+* Start using version numbers
+* Omaha support
+* Wildcard support, eg: A?K? (or even AK) or ?? for a random hand
+** What about stuff like AKs or AKo
+* Hand range support, eg: A?K?, A?A?, K?K? 
