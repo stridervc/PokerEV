@@ -14,7 +14,7 @@
 #include "poker_defs.h"
 #include "inlines/eval.h"
 
-void 	evalSingleTrial(StdDeck_CardMask player1, StdDeck_CardMask player2, StdDeck_CardMask userBoard, StdDeck_CardMask board, 
+void 	evalSingleTrial(int numHands, StdDeck_CardMask hands[], StdDeck_CardMask userBoard, StdDeck_CardMask board, 
 			double wins[], double ties[], int *numberOfTrials);
 StdDeck_CardMask	txtToMask(const char *txt);
 void	cleanInput(char *hand);
@@ -22,21 +22,33 @@ void	cleanInput(char *hand);
 int main(int argc, char **argv) {
 
 	// Read two hands from keyboard
-	char 				hand1str[10];
-	char				hand2str[10];
-	char				boardstr[10];
-	StdDeck_CardMask	hand1, hand2, board;
+	char 				handstr[10][10];	// Array of hands read from user input (max 10)
+	char				boardstr[10];		// Comunity cards read from user input
+	StdDeck_CardMask	hands[10], board;	// CardMask versions of user input
+	StdDeck_CardMask 	deadCards;			// Cards that shouldn't be in the deck
+	int					numHands;			// Number of hands the user supplied
+	int					i;					// The std looping variable
 
-	printf("Hand 1 : ");
-	scanf("%s", hand1str);
-	cleanInput(hand1str);
-	hand1 = txtToMask(hand1str);
+	// Keep reading hands from the user until done, or until we reach 10 hands
+	i = 0;
+	while (i < 10) {
+		printf("Hand %d ", i+1);
+		if (i >= 2)
+			printf("(. for none) ");
+		printf(": ");
 
-	printf("Hand 2 : ");
-	scanf("%s", hand2str);
-	cleanInput(hand2str);
-	hand2 = txtToMask(hand2str);
+		scanf("%s", handstr[i]);
 
+		if (handstr[i][0] == '.')
+			break;
+		cleanInput(handstr[i]);
+		hands[i] = txtToMask(handstr[i]);
+
+		i++;
+	}
+	numHands = i;
+
+	// Ask the user for community cards
 	StdDeck_CardMask_RESET(board);
 	printf("Board (. for none) : ");
 	scanf("%s", boardstr);
@@ -45,80 +57,105 @@ int main(int argc, char **argv) {
 		board = txtToMask(boardstr);
 	}
 
-	int cardIndex = -1;
-
-	// Dead cards
-	StdDeck_CardMask deadCards;
+	// remove community cards and player hands from the deck
 	StdDeck_CardMask_RESET(deadCards);
-	StdDeck_CardMask_OR(deadCards, hand1, hand2);
-	StdDeck_CardMask_OR(deadCards, deadCards, board);
+	for (i = 0; i < numHands; i++)
+		StdDeck_CardMask_OR(deadCards, deadCards, hands[i]);
 
 	// Keep stats
-	double wins[2] = { 0.0 };
-	double ties[2] = { 0.0 };
-	int numberOfTrials = 0;
+	double 	wins[10] = { 0.0 };
+	double 	ties[10] = { 0.0 };
+	int 	numberOfTrials = 0;
 
 	// Enumerate all possible boards
 	StdDeck_CardMask boardCards;
 	if (StdDeck_numCards(board) == 0) {			// is there any board?
 		DECK_ENUMERATE_5_CARDS_D(StdDeck, boardCards, deadCards, 
-			evalSingleTrial(hand1, hand2, board, boardCards, wins, ties, &numberOfTrials); );
+			evalSingleTrial(numHands, hands, board, boardCards, wins, ties, &numberOfTrials); );
 	} else if (StdDeck_numCards(board) == 3) {	// is there a flop?
 		DECK_ENUMERATE_2_CARDS_D(StdDeck, boardCards, deadCards, 
-			evalSingleTrial(hand1, hand2, board, boardCards, wins, ties, &numberOfTrials); );
+			evalSingleTrial(numHands, hands, board, boardCards, wins, ties, &numberOfTrials); );
 	} else if (StdDeck_numCards(board) == 4) {	// is there a flop and turn?
 		DECK_ENUMERATE_1_CARDS_D(StdDeck, boardCards, deadCards, 
-			evalSingleTrial(hand1, hand2, board, boardCards, wins, ties, &numberOfTrials); );
+			evalSingleTrial(numHands, hands, board, boardCards, wins, ties, &numberOfTrials); );
 	} else {
 		printf("Invalid board\r\n");
 		return 1;
 	}
 
 	// Convert wins to equity
-	double h1Equity = ((wins[0] + ties[0]/2) / numberOfTrials) * 100.0;
-	double h2Equity = ((wins[1] + ties[1]/2) / numberOfTrials) * 100.0;
-	double h1Wins = (wins[0] / numberOfTrials) * 100.0;
-	double h2Wins = (wins[1] / numberOfTrials) * 100.0;
-	double h1Ties = (ties[0] / numberOfTrials) * 100.0;
-	double h2Ties = (ties[1] / numberOfTrials) * 100.0;
+	double	handEquity[10];
+	double	handWins[10];
+	double	handTies[10];
+	for (i = 0; i < numHands; i++) {
+		handEquity[i] = ((wins[i] + ties[i]/2) / numberOfTrials) * 100.0;
+		handWins[i] = (wins[i] / numberOfTrials) * 100.0;
+		handTies[i] = (ties[i] / numberOfTrials) * 100.0;
+	}
 
 	printf("\r\n");
 	if (StdDeck_numCards(board))
 		printf("Board : %s\r\n\r\n", boardstr);
 
 	printf("         Equity    : Win       : Tie \r\n");
-	printf("Hand 1 : %0.4f %% : %0.4f %% : %0.4f %% : %s\r\n", h1Equity, h1Wins, h1Ties, hand1str);
-	printf("Hand 2 : %0.4f %% : %0.4f %% : %0.4f %% : %s\r\n", h2Equity, h2Wins, h2Ties, hand2str);
+	for (i = 0; i < numHands; i++)
+		printf("Hand %d : %0.4f %% : %0.4f %% : %0.4f %% : %s\r\n", i+1, handEquity[i], handWins[i], handTies[i], handstr[i]);
 
 	return 0;
 }
 
-void evalSingleTrial(StdDeck_CardMask player1, StdDeck_CardMask player2, StdDeck_CardMask userBoard, StdDeck_CardMask board, 
-	double wins[], double ties[], int *numberOfTrials) {
+/*
+ * Evaluates a single enumeration of possible communit cards
+ * numHands = Number of hands involved
+ * hand = array of all hands involved
+ * userBoard = community cards as supplied by the user
+ * board = current enumeration of the rest of the board
+ * wins = keep track of wins for each hand
+ * ties = keep track of ties for each hand
+ * numberOfTrials = keep track of the number of enumerations gone through
+*/
+void evalSingleTrial(int numHands, StdDeck_CardMask hands[], StdDeck_CardMask userBoard, StdDeck_CardMask board, 
+		double wins[], double ties[], int *numberOfTrials) {
+	
+	StdDeck_CardMask	tmpHand;
+	int					i;
+	int					handVal[10];
+	int					maxVal = -1;	// the best hand value
+	int 				tie = 0;		// do we have a tie?
+
 	// Combine each player's hole cards with board cards
-	StdDeck_CardMask_OR(player1, player1, board);
-	StdDeck_CardMask_OR(player1, player1, userBoard);
+	for (i = 0; i < numHands; i++) {
+		StdDeck_CardMask_RESET(tmpHand);
+		StdDeck_CardMask_OR(tmpHand, hands[i], board);
+		StdDeck_CardMask_OR(tmpHand, tmpHand, userBoard);
 
-	StdDeck_CardMask_OR(player2, player2, board);
-	StdDeck_CardMask_OR(player2, player2, userBoard);
+		// evaluate hand strength
+		handVal[i] = StdDeck_StdRules_EVAL_N(tmpHand, 7);
+	
+		// is this hand better than the best so far?
+		if (handVal[i] > maxVal) {
+			maxVal = handVal[i];
+			tie = 0;
+		
+		// or does it equal the max hand? iow we have a tie
+		} else if (handVal[i] == maxVal) {
+			tie = 1;
+		}
 
-	// Evaluate each player's hand
-	int p1Val = StdDeck_StdRules_EVAL_N(player1, 7);
-	int p2Val = StdDeck_StdRules_EVAL_N(player2, 7);
 
-	// keep track of wins
-	if (p1Val > p2Val)
-		wins[0] += 1.0;
-	else if (p2Val > p1Val)
-		wins[1] += 1.0;
-	else {
-		ties[0] += 1.0;
-		ties[1] += 1.0;
+	}
+
+	// chalk up one for the winner, or one for each tied hand
+	for (i = 0; i < numHands; i++) {
+		if (handVal[i] == maxVal)
+			if (tie)
+				ties[i] += 1.0;
+			else
+				wins[i] += 1.0;
 	}
 
 	(*numberOfTrials)++;
 }
-
 
 // Converts plaintext to cardmask
 StdDeck_CardMask	txtToMask(const char *txt) {
@@ -149,7 +186,6 @@ StdDeck_CardMask	txtToMask(const char *txt) {
 
 	return hand;
 }
-
 
 // Tidies up user input for a hand
 void	cleanInput(char *hand) {
