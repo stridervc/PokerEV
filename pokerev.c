@@ -120,7 +120,7 @@ void evalSingleTrial(int numHands, StdDeck_CardMask hands[], StdDeck_CardMask us
 	StdDeck_CardMask	tmpHand;
 	int					i;
 	int					handVal[10];
-	int					maxVal = -1;		// the best hand value
+	int					maxVal = -1;	// the best hand value
 	int 				tie = 0;		// do we have a tie?
 
 	// Combine each player's hole cards with board cards
@@ -136,20 +136,22 @@ void evalSingleTrial(int numHands, StdDeck_CardMask hands[], StdDeck_CardMask us
 		if (handVal[i] > maxVal) {
 			maxVal = handVal[i];
 			tie = 0;
+		
+		// or does it equal the max hand? iow we have a tie
+		} else if (handVal[i] == maxVal) {
+			tie = 1;
 		}
 
-		// does it equal the max hand? iow we have a tie
-		if (handVal[i] == maxVal)
-			tie = 1;
+
 	}
 
 	// chalk up one for the winner, or one for each tied hand
 	for (i = 0; i < numHands; i++) {
 		if (handVal[i] == maxVal)
 			if (tie)
-				ties[i]++;
+				ties[i] += 1.0;
 			else
-				wins[i]++;
+				wins[i] += 1.0;
 	}
 
 	(*numberOfTrials)++;
