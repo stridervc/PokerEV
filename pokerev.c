@@ -14,7 +14,7 @@
 #include "poker_defs.h"
 #include "inlines/eval.h"
 
-void 	evalSingleTrial(StdDeck_CardMask player1, StdDeck_CardMask player2, StdDeck_CardMask board, 
+void 	evalSingleTrial(StdDeck_CardMask player1, StdDeck_CardMask player2, StdDeck_CardMask userBoard, StdDeck_CardMask board, 
 			double wins[], double ties[], int *numberOfTrials);
 StdDeck_CardMask	txtToMask(const char *txt);
 void	cleanInput(char *hand);
@@ -24,7 +24,8 @@ int main(int argc, char **argv) {
 	// Read two hands from keyboard
 	char 				hand1str[10];
 	char				hand2str[10];
-	StdDeck_CardMask	hand1, hand2;
+	char				boardstr[10];
+	StdDeck_CardMask	hand1, hand2, board;
 
 	printf("Hand 1 : ");
 	scanf("%s", hand1str);
@@ -36,21 +37,42 @@ int main(int argc, char **argv) {
 	cleanInput(hand2str);
 	hand2 = txtToMask(hand2str);
 
+	StdDeck_CardMask_RESET(board);
+	printf("Board (. for none) : ");
+	scanf("%s", boardstr);
+	if (boardstr[0] != '.') {
+		cleanInput(boardstr);
+		board = txtToMask(boardstr);
+	}
+
 	int cardIndex = -1;
 
 	// Dead cards
 	StdDeck_CardMask deadCards;
+	StdDeck_CardMask_RESET(deadCards);
 	StdDeck_CardMask_OR(deadCards, hand1, hand2);
+	StdDeck_CardMask_OR(deadCards, deadCards, board);
 
 	// Keep stats
 	double wins[2] = { 0.0 };
 	double ties[2] = { 0.0 };
 	int numberOfTrials = 0;
 
-	// Enumerate all possible 5 card boards
+	// Enumerate all possible boards
 	StdDeck_CardMask boardCards;
-	DECK_ENUMERATE_5_CARDS_D(StdDeck, boardCards, deadCards, 
-		evalSingleTrial(hand1, hand2, boardCards, wins, ties, &numberOfTrials); );
+	if (StdDeck_numCards(board) == 0) {			// is there any board?
+		DECK_ENUMERATE_5_CARDS_D(StdDeck, boardCards, deadCards, 
+			evalSingleTrial(hand1, hand2, board, boardCards, wins, ties, &numberOfTrials); );
+	} else if (StdDeck_numCards(board) == 3) {	// is there a flop?
+		DECK_ENUMERATE_2_CARDS_D(StdDeck, boardCards, deadCards, 
+			evalSingleTrial(hand1, hand2, board, boardCards, wins, ties, &numberOfTrials); );
+	} else if (StdDeck_numCards(board) == 4) {	// is there a flop and turn?
+		DECK_ENUMERATE_1_CARDS_D(StdDeck, boardCards, deadCards, 
+			evalSingleTrial(hand1, hand2, board, boardCards, wins, ties, &numberOfTrials); );
+	} else {
+		printf("Invalid board\r\n");
+		return 1;
+	}
 
 	// Convert wins to equity
 	double h1Equity = ((wins[0] + ties[0]/2) / numberOfTrials) * 100.0;
@@ -61,6 +83,9 @@ int main(int argc, char **argv) {
 	double h2Ties = (ties[1] / numberOfTrials) * 100.0;
 
 	printf("\r\n");
+	if (StdDeck_numCards(board))
+		printf("Board : %s\r\n\r\n", boardstr);
+
 	printf("         Equity    : Win       : Tie \r\n");
 	printf("Hand 1 : %0.4f %% : %0.4f %% : %0.4f %% : %s\r\n", h1Equity, h1Wins, h1Ties, hand1str);
 	printf("Hand 2 : %0.4f %% : %0.4f %% : %0.4f %% : %s\r\n", h2Equity, h2Wins, h2Ties, hand2str);
@@ -68,11 +93,14 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-void evalSingleTrial(StdDeck_CardMask player1, StdDeck_CardMask player2, StdDeck_CardMask board, 
+void evalSingleTrial(StdDeck_CardMask player1, StdDeck_CardMask player2, StdDeck_CardMask userBoard, StdDeck_CardMask board, 
 	double wins[], double ties[], int *numberOfTrials) {
 	// Combine each player's hole cards with board cards
 	StdDeck_CardMask_OR(player1, player1, board);
+	StdDeck_CardMask_OR(player1, player1, userBoard);
+
 	StdDeck_CardMask_OR(player2, player2, board);
+	StdDeck_CardMask_OR(player2, player2, userBoard);
 
 	// Evaluate each player's hand
 	int p1Val = StdDeck_StdRules_EVAL_N(player1, 7);

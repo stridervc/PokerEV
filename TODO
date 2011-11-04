@@ -1,4 +1,4 @@
 * Optionally specify starting hands on command line
-* Read board from user (can be left empty for pre-flop equity)
 * Compilation instructions
 * Input multiple hands
+* Don't like that you have to type '.' for no board, should just hit enter, but scanf won't allow this. Need to find a better way.
