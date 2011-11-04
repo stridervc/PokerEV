@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
 	double h2Ties = (ties[1] / numberOfTrials) * 100.0;
 
 	printf("\r\n");
-	printf("         Equity    : Wins      : Ties\r\n");
+	printf("         Equity    : Win       : Tie \r\n");
 	printf("Hand 1 : %0.4f %% : %0.4f %% : %0.4f %% : %s\r\n", h1Equity, h1Wins, h1Ties, hand1str);
 	printf("Hand 2 : %0.4f %% : %0.4f %% : %0.4f %% : %s\r\n", h2Equity, h2Wins, h2Ties, hand2str);
 
