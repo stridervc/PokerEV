@@ -15,7 +15,7 @@
 #include "inlines/eval.h"
 
 void 	evalSingleTrial(StdDeck_CardMask player1, StdDeck_CardMask player2, StdDeck_CardMask board, 
-			double wins[], int *numberOfTrials);
+			double wins[], double ties[], int *numberOfTrials);
 StdDeck_CardMask	txtToMask(const char *txt);
 void	cleanInput(char *hand);
 
@@ -44,27 +44,32 @@ int main(int argc, char **argv) {
 
 	// Keep stats
 	double wins[2] = { 0.0 };
+	double ties[2] = { 0.0 };
 	int numberOfTrials = 0;
 
 	// Enumerate all possible 5 card boards
 	StdDeck_CardMask boardCards;
 	DECK_ENUMERATE_5_CARDS_D(StdDeck, boardCards, deadCards, 
-		evalSingleTrial(hand1, hand2, boardCards, wins, &numberOfTrials); );
+		evalSingleTrial(hand1, hand2, boardCards, wins, ties, &numberOfTrials); );
 
 	// Convert wins to equity
-	double h1Equity = (wins[0] / numberOfTrials) * 100.0;
-	double h2Equity = (wins[1] / numberOfTrials) * 100.0;
+	double h1Equity = ((wins[0] + ties[0]/2) / numberOfTrials) * 100.0;
+	double h2Equity = ((wins[1] + ties[1]/2) / numberOfTrials) * 100.0;
+	double h1Wins = (wins[0] / numberOfTrials) * 100.0;
+	double h2Wins = (wins[1] / numberOfTrials) * 100.0;
+	double h1Ties = (ties[0] / numberOfTrials) * 100.0;
+	double h2Ties = (ties[1] / numberOfTrials) * 100.0;
 
 	printf("\r\n");
-	printf("         Equity\r\n");
-	printf("Hand 1 : %0.4f %% : %s\r\n", h1Equity, hand1str);
-	printf("Hand 2 : %0.4f %% : %s\r\n", h2Equity, hand2str);
+	printf("         Equity    : Wins      : Ties\r\n");
+	printf("Hand 1 : %0.4f %% : %0.4f %% : %0.4f %% : %s\r\n", h1Equity, h1Wins, h1Ties, hand1str);
+	printf("Hand 2 : %0.4f %% : %0.4f %% : %0.4f %% : %s\r\n", h2Equity, h2Wins, h2Ties, hand2str);
 
 	return 0;
 }
 
 void evalSingleTrial(StdDeck_CardMask player1, StdDeck_CardMask player2, StdDeck_CardMask board, 
-	double wins[], int *numberOfTrials) {
+	double wins[], double ties[], int *numberOfTrials) {
 	// Combine each player's hole cards with board cards
 	StdDeck_CardMask_OR(player1, player1, board);
 	StdDeck_CardMask_OR(player2, player2, board);
@@ -79,8 +84,8 @@ void evalSingleTrial(StdDeck_CardMask player1, StdDeck_CardMask player2, StdDeck
 	else if (p2Val > p1Val)
 		wins[1] += 1.0;
 	else {
-		wins[0] += 0.5;
-		wins[1] += 0.5;
+		ties[0] += 1.0;
+		ties[1] += 1.0;
 	}
 
 	(*numberOfTrials)++;

@@ -1,4 +1,3 @@
 * Optionally specify starting hands on command line
 * Read board from user (can be left empty for pre-flop equity)
-* Show win and tie %s separately 
 * Compilation instructions
