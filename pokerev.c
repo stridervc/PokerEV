@@ -10,24 +10,54 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <getopt.h>
 
 #include "poker_defs.h"
 #include "inlines/eval.h"
+
+static const char *optString = "Oh?";		// command line arguments we support
+static const struct option longOpts[] = {	// long versions of options
+    { "odds", no_argument, NULL, 'O' },
+    { "help", no_argument, NULL, 'h' }
+};
 
 void 	evalSingleTrial(int numHands, StdDeck_CardMask hands[], StdDeck_CardMask userBoard, StdDeck_CardMask board, 
 			double wins[], double ties[], int *numberOfTrials);
 StdDeck_CardMask	txtToMask(const char *txt);
 void	cleanInput(char *hand);
+void	display_help(char *progname);
 
 int main(int argc, char **argv) {
 
-	// Read two hands from keyboard
 	char 				handstr[10][10];	// Array of hands read from user input (max 10)
 	char				boardstr[10];		// Comunity cards read from user input
 	StdDeck_CardMask	hands[10], board;	// CardMask versions of user input
 	StdDeck_CardMask 	deadCards;			// Cards that shouldn't be in the deck
 	int					numHands;			// Number of hands the user supplied
 	int					i;					// The std looping variable
+
+	// Proccess command line arguments
+	int	opt;
+	int	longIndex;
+
+	opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
+
+	while(opt != -1) {
+		switch(opt) {
+			case 'O':	// display odds instead of percentages
+				break;
+
+			case 'h':
+			case '?':
+				display_help(argv[0]);
+				return(0);
+
+			default:
+				break;
+		}
+
+		opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
+	}
 
 	// Keep reading hands from the user until done, or until we reach 10 hands
 	i = 0;
@@ -200,3 +230,13 @@ void	cleanInput(char *hand) {
 		i++;
 	}
 }
+
+// Display help text
+void	display_help( char *progname) {
+	printf("Usage: %s [OPTION]...\r\n\r\n", progname);
+	printf("OPTION can be:\r\n");
+	//printf("\t-o, --omaha\tCalculate odds for Omaha\r\n");
+	printf("\t-O, --odds\tDisplay odds instead of percentages\r\n");
+	printf("\t-h, -?, --help\tHelp\r\n");
+}
+
