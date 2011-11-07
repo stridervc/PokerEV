@@ -130,9 +130,9 @@ int main(int argc, char **argv) {
 		printf("Board : %s\r\n\r\n", boardstr);
 
 	if (showOdds)
-		printf("         Equity                 : Win                    : Tie \r\n");
+		printf("       Equity                 : Win                    : Tie \r\n");
 	else
-		printf("         Equity    : Win       : Tie \r\n");
+		printf("       Equity    : Win       : Tie \r\n");
 
 	for (i = 0; i < numHands; i++)
 		if (showOdds) {	// convert percentages to odds, maybe more efficient to do this above, but then we need another array to store dog / favourite
@@ -149,10 +149,10 @@ int main(int argc, char **argv) {
 				winOdds = handWins[i] / (100-handWins[i]);
 			}
 
-			printf("Hand %d : %0.4f %% (%0.2f:1 %s) : %0.4f %% (%0.2f:1 %s) : %0.4f %% : %s\r\n", i+1, handEquity[i], equityOdds, dog?"dog":"fav", handWins[i], winOdds, dog?"dog":"fav", handTies[i], handstr[i]);
+			printf("%s : %0.4f %% (%0.2f:1 %s) : %0.4f %% (%0.2f:1 %s) : %0.4f %%\r\n", handstr[i], handEquity[i], equityOdds, dog?"dog":"fav", handWins[i], winOdds, dog?"dog":"fav", handTies[i]);
 
 		} else {	// show percentages
-			printf("Hand %d : %0.4f %% : %0.4f %% : %0.4f %% : %s\r\n", i+1, handEquity[i], handWins[i], handTies[i], handstr[i]);
+			printf("%s : %0.4f %% : %0.4f %% : %0.4f %%\r\n", handstr[i], handEquity[i], handWins[i], handTies[i]);
 		}
 
 	return 0;
