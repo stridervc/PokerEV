@@ -11,6 +11,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <getopt.h>
+#include <stdbool.h>
 
 #include "poker_defs.h"
 #include "inlines/eval.h"
@@ -35,16 +36,17 @@ int main(int argc, char **argv) {
 	StdDeck_CardMask 	deadCards;			// Cards that shouldn't be in the deck
 	int					numHands;			// Number of hands the user supplied
 	int					i;					// The std looping variable
+	int					opt;				// For getopt
+	int					longIndex;			// For getopt
+	bool				showOdds = false;	// Display odds instead of percentages?
 
-	// Proccess command line arguments
-	int	opt;
-	int	longIndex;
-
+	// Process command line arguments
 	opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
 
-	while(opt != -1) {
-		switch(opt) {
+	while (opt != -1) {
+		switch (opt) {
 			case 'O':	// display odds instead of percentages
+				showOdds = true;
 				break;
 
 			case 'h':
@@ -127,9 +129,31 @@ int main(int argc, char **argv) {
 	if (StdDeck_numCards(board))
 		printf("Board : %s\r\n\r\n", boardstr);
 
-	printf("         Equity    : Win       : Tie \r\n");
+	if (showOdds)
+		printf("         Equity                 : Win                    : Tie \r\n");
+	else
+		printf("         Equity    : Win       : Tie \r\n");
+
 	for (i = 0; i < numHands; i++)
-		printf("Hand %d : %0.4f %% : %0.4f %% : %0.4f %% : %s\r\n", i+1, handEquity[i], handWins[i], handTies[i], handstr[i]);
+		if (showOdds) {	// convert percentages to odds, maybe more efficient to do this above, but then we need another array to store dog / favourite
+			double	equityOdds, winOdds;
+			bool	dog = false;
+
+			if (handEquity[i] < 50) {		// we're a dog
+				dog = true;
+				equityOdds = (100-handEquity[i]) / handEquity[i];
+				winOdds = (100-handWins[i]) / handWins[i];
+
+			} else {						// we're the favourite
+				equityOdds = handEquity[i] / (100-handEquity[i]);
+				winOdds = handWins[i] / (100-handWins[i]);
+			}
+
+			printf("Hand %d : %0.4f %% (%0.2f:1 %s) : %0.4f %% (%0.2f:1 %s) : %0.4f %% : %s\r\n", i+1, handEquity[i], equityOdds, dog?"dog":"fav", handWins[i], winOdds, dog?"dog":"fav", handTies[i], handstr[i]);
+
+		} else {	// show percentages
+			printf("Hand %d : %0.4f %% : %0.4f %% : %0.4f %% : %s\r\n", i+1, handEquity[i], handWins[i], handTies[i], handstr[i]);
+		}
 
 	return 0;
 }
@@ -236,7 +260,8 @@ void	display_help( char *progname) {
 	printf("Usage: %s [OPTION]...\r\n\r\n", progname);
 	printf("OPTION can be:\r\n");
 	//printf("\t-o, --omaha\tCalculate odds for Omaha\r\n");
-	printf("\t-O, --odds\tDisplay odds instead of percentages\r\n");
+	printf("\t-O, --odds\tDisplay odds as well as percentages\r\n");
 	printf("\t-h, -?, --help\tHelp\r\n");
+	printf("\r\n");
 }
 

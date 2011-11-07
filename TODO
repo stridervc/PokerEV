@@ -8,5 +8,4 @@
 * Wildcard support, eg: A?K? (or even AK) or ?? for a random hand
 ** What about stuff like AKs or AKo
 * Hand range support, eg: A?K?, A?A?, K?K?, 88+
-* Option to print odds instead of percentages, eg: 3.5:1 dog
 * Check math on split pots when more than two hands are involved
