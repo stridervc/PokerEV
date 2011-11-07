@@ -1,7 +1,18 @@
-Poker EV calculator
+Poker EV calculator for the linux command line
 
 Inspired by Poker Stove
 
 Uses pokersource-eval library
-Thanks to http://www.codingthewheel.com/ for examples on how to use pokersource-eval library :)
+Thanks to http://www.codingthewheel.com/ for examples on how to use pokersource-eval library
+
+pokerev is a simple poker odds calculator for the linux command line.
+It's currently in very early stages. It can calculate odds for hold'em with 2 to 10 starting 
+hands and either no flop, a flop or flop + turn.
+There is no sanity checking on user input and documentation is lacking. This will improve 
+over time.
+
+Cards are expected in the format of rank followed by suit, no spaces, one character each.
+Also no spaces between cards in a hand or on the board. For example, ace of spades and 
+ten of hearts would be given as AsTh
+A flop that consists of the king of clubs, queen of diamonds and 3 of spades would be: KcQd3s
 
