@@ -21,6 +21,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define VERSION "0.1.0"
+
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -41,6 +43,7 @@ void 	evalSingleTrial(int numHands, StdDeck_CardMask hands[], StdDeck_CardMask u
 StdDeck_CardMask	txtToMask(const char *txt);
 void	cleanInput(char *hand);
 void	display_help(char *progname);
+void	display_version();
 
 int main(int argc, char **argv) {
 
@@ -140,6 +143,8 @@ int main(int argc, char **argv) {
 	}
 
 	printf("\r\n");
+	display_version();
+
 	if (StdDeck_numCards(board))
 		printf("Board : %s\r\n\r\n", boardstr);
 
@@ -271,6 +276,7 @@ void	cleanInput(char *hand) {
 
 // Display help text
 void	display_help( char *progname) {
+	display_version();
 	printf("Usage: %s [OPTION]...\r\n\r\n", progname);
 	printf("OPTION can be:\r\n");
 	//printf("\t-o, --omaha\tCalculate odds for Omaha\r\n");
@@ -279,3 +285,7 @@ void	display_help( char *progname) {
 	printf("\r\n");
 }
 
+void	display_version() {
+	printf("PokerEV version %s\r\n", VERSION);
+	printf("\r\n");
+}
