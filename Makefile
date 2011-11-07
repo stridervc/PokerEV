@@ -1,14 +1,17 @@
 CC=gcc
 EXECUTABLE=pokerev
+OBJECTS=pokerev.o
+INCLUDEDIR=/usr/local/include/poker-eval/
+LIBPOKER=/usr/local/lib/libpoker-eval.a
 
-all: pokerev
+all: $(EXECUTABLE)
 
-pokerev: pokerev.o
-	$(CC) pokerev.o /usr/local/lib/libpoker-eval.a -o $(EXECUTABLE)
+$(EXECUTABLE): $(OBJECTS)
+	$(CC) $(OBJECTS) $(LIBPOKER) -o $@
 	strip $(EXECUTABLE)
 
-pokerev.o: pokerev.c
-	$(CC) -I include -c pokerev.c
+.c.o:
+	$(CC) -I $(INCLUDEDIR) -c $< -o $@
 
 clean:
-	rm -f $(EXECUTABLE) pokerev.o
+	rm -f $(EXECUTABLE) $(OBJECTS)
