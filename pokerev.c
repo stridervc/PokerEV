@@ -35,7 +35,8 @@
 static const char *optString = "Oh?";		// command line arguments we support
 static const struct option longOpts[] = {	// long versions of options
     { "odds", no_argument, NULL, 'O' },
-    { "help", no_argument, NULL, 'h' }
+    { "help", no_argument, NULL, 'h' },
+	{ NULL, no_argument, NULL, 0 }
 };
 
 void 	evalSingleTrial(int numHands, StdDeck_CardMask hands[], StdDeck_CardMask userBoard, StdDeck_CardMask board, 
