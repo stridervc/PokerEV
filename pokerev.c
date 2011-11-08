@@ -39,9 +39,8 @@ static const struct option longOpts[] = {	// long versions of options
 	{ NULL, no_argument, NULL, 0 }
 };
 
-void 	evalSingleTrial(int numHands, StdDeck_CardMask hands[], StdDeck_CardMask userBoard, StdDeck_CardMask board, 
-			double wins[], double ties[], int *numberOfTrials);
-StdDeck_CardMask	txtToMask(const char *txt);
+void 	evalSingleTrial(int numHands, StdDeck_CardMask hands[], StdDeck_CardMask userBoard, StdDeck_CardMask board, double wins[], double ties[], int *numberOfTrials);
+int		txtToMask(StdDeck_CardMask *hands[], const char *txt);
 void	cleanInput(char *hand);
 void	display_help(char *progname);
 void	display_version();
@@ -91,7 +90,7 @@ int main(int argc, char **argv) {
 
 		if (handstr[i][0] == '.')
 			break;
-		cleanInput(handstr[i]);
+		//cleanInput(handstr[i]);	// this will break with hand ranges, TODO fix it
 		hands[i] = txtToMask(handstr[i]);
 
 		i++;
@@ -232,33 +231,50 @@ void evalSingleTrial(int numHands, StdDeck_CardMask hands[], StdDeck_CardMask us
 }
 
 // Converts plaintext to cardmask
-StdDeck_CardMask	txtToMask(const char *txt) {
-	StdDeck_CardMask	hand;		// the hand to return
-	StdDeck_CardMask	currCard;	// current card mask
-	int					index;		// tmp card index valie
-	char				card[3];
-	int					i = 0;
+// Supports multiple hands, eg: AsKd, KcQc
+// hands = array of hands
+// txt = txt string for hands, read from user
+// return value = number of hands found
+int		txtToMask(StdDeck_CardMask *hands[], const char *txt) {
+	StdDeck_CardMask	currCard;		// current card mask
+	int					index;			// tmp card index value
+	char				card[3];		// temp string for a single card
+	int					i = 0;			// loop through txt
+	int					handcount = 0;	// number of hands in range
+	int					cardcount = 0;	// number of cards in current hand
 
-	StdDeck_CardMask_RESET(hand);
+	StdDeck_CardMask_RESET(hands[handcount]);
 
-	if (strlen(txt)) {
-		while (txt[i*2] != 0) {
-			card[0] = txt[0+i*2];
-			card[1] = txt[1+i*2];
-			card[2] = 0;
-		
-			// convert card to index value
-			StdDeck_stringToCard(card, &index);
-			// convert index value to mask
-			currCard = StdDeck_MASK(index);
-			// add the card to the hand
-			StdDeck_CardMask_OR(hand, hand, currCard);
-			// move to next card
+	// loop through text input, reading each two cards as a hand
+	// fill an array of multiple hands
+	while (i < strlen(txt)) {
+		// skip spaces and commas
+		if (txt[i] == ' ' || txt[i] == ',') {
 			i++;
+			continue;
+		}
+
+		// read rank and suit of card
+		card[0] = txt[i++];
+		card[1] = txt[i++];
+		card[2] = 0;
+		
+		// convert card to index value
+		StdDeck_stringToCard(card, &index);
+		// convert index value to mask
+		currCard = StdDeck_MASK(index);
+		// add the card to the current hand
+		StdDeck_CardMask_OR(hands[handcount], hands[handcount], currCard);
+
+		// two cards in this hand yet, iow, time for next hand?
+		if (cardcount++ == 2) {
+			cardcount = 0;
+			handcount++;
+			StdDeck_CardMask_RESET(hands[handcount]);
 		}
 	}
 
-	return hand;
+	return handcount;
 }
 
 // Tidies up user input for a hand
