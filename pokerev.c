@@ -41,7 +41,8 @@ static const char *optString = "Oh?";		// command line arguments we support
 static const struct option longOpts[] = {	// long versions of options
     { "odds", no_argument, NULL, 'O' },
     { "help", no_argument, NULL, 'h' },
-	{ NULL, no_argument, NULL, 0 }
+    { "version", no_argument, NULL, 0 },
+    { NULL, no_argument, NULL, 0 }
 };
 
 int		parsecmdline(int argc, char **argv, bool *showOdds);
@@ -189,6 +190,12 @@ int		parsecmdline(int argc, char **argv, bool *showOdds) {
 				display_help(argv[0]);
 				return 1;
 
+			case 0:
+				if (strcmp("version",longOpts[longIndex].name) == 0) {
+					display_version();
+					return 2;
+				}
+
 			default:
 				break;
 		}
@@ -328,6 +335,7 @@ void	display_help( char *progname) {
 	//printf("\t-o, --omaha\tCalculate odds for Omaha\r\n");
 	printf("\t-O, --odds\tDisplay odds as well as percentages\r\n");
 	printf("\t-h, -?, --help\tHelp\r\n");
+	printf("\t--version\tDisplay version and exit\r\n");
 	printf("\r\n");
 }
 
