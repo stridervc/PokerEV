@@ -32,6 +32,9 @@
 #include "poker_defs.h"
 #include "inlines/eval.h"
 
+#define MAXHANDS 10
+#define MAXHANDLEN 1000
+
 static const char *optString = "Oh?";		// command line arguments we support
 static const struct option longOpts[] = {	// long versions of options
     { "odds", no_argument, NULL, 'O' },
@@ -47,15 +50,15 @@ void	display_version();
 
 int main(int argc, char **argv) {
 
-	char 				handstr[10][10];	// Array of hands read from user input (max 10)
-	char				boardstr[10];		// Comunity cards read from user input
-	StdDeck_CardMask	hands[10], board;	// CardMask versions of user input
-	StdDeck_CardMask 	deadCards;			// Cards that shouldn't be in the deck
-	int					numHands;			// Number of hands the user supplied
-	int					i;					// The std looping variable
-	int					opt;				// For getopt
-	int					longIndex;			// For getopt
-	bool				showOdds = false;	// Display odds instead of percentages?
+	char 				handstr[MAXHANDS][MAXHANDLEN];	// Array of hands read from user input (max 10)
+	char				boardstr[MAXHANDS];				// Comunity cards read from user input
+	StdDeck_CardMask	hands[MAXHANDS], board;			// CardMask versions of user input
+	StdDeck_CardMask 	deadCards;						// Cards that shouldn't be in the deck
+	int					numHands;						// Number of hands the user supplied
+	int					i;								// The std looping variable
+	int					opt;							// For getopt
+	int					longIndex;						// For getopt
+	bool				showOdds = false;				// Display odds instead of percentages?
 
 	// Process command line arguments
 	opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
@@ -83,20 +86,22 @@ int main(int argc, char **argv) {
 	while (i < 10) {
 		printf("Hand %d ", i+1);
 		if (i >= 2)
-			printf("(. for none) ");
+			printf("(ENTER for none) ");
 		printf(": ");
 
-		scanf("%s", handstr[i]);
+		fgets(handstr[i], MAXHANDLEN, stdin);
 
-		if (handstr[i][0] == '.')
+		// break on '.' or enter with no input
+		if (handstr[i][0] == '.' || strlen(handstr[i]) == 1)
 			break;
-		//cleanInput(handstr[i]);	// this will break with hand ranges, TODO fix it
-		hands[i] = txtToMask(handstr[i]);
 
+		cleanInput(handstr[i]);	
+		//DBG hands[i] = txtToMask(handstr[i]);
 		i++;
 	}
 	numHands = i;
 
+	/* DBG
 	// Ask the user for community cards
 	StdDeck_CardMask_RESET(board);
 	printf("Board (. for none) : ");
@@ -174,13 +179,14 @@ int main(int argc, char **argv) {
 			printf("%s : %0.4f %% : %0.4f %% : %0.4f %%\r\n", handstr[i], handEquity[i], handWins[i], handTies[i]);
 		}
 
+	*/
 	return 0;
 }
 
 /*
  * Evaluates a single enumeration of possible communit cards
  * numHands = Number of hands involved
- * hand = array of all hands involved
+ * hands = array of all hands involved
  * userBoard = community cards as supplied by the user
  * board = current enumeration of the rest of the board
  * wins = keep track of wins for each hand
@@ -232,7 +238,7 @@ void evalSingleTrial(int numHands, StdDeck_CardMask hands[], StdDeck_CardMask us
 
 // Converts plaintext to cardmask
 // Supports multiple hands, eg: AsKd, KcQc (in progress!)
-// hands = array of hands
+// hands = array of hands in player's range
 // txt = txt string for hands, read from user
 // return value = number of hands found
 int		txtToMask(StdDeck_CardMask *hands[], const char *txt) {
@@ -243,7 +249,7 @@ int		txtToMask(StdDeck_CardMask *hands[], const char *txt) {
 	int					handcount = 0;	// number of hands in range
 	int					cardcount = 0;	// number of cards in current hand
 
-	StdDeck_CardMask_RESET(hands[handcount]);
+	//DBG StdDeck_CardMask_RESET(hands[handcount]);
 
 	// loop through text input, reading each two cards as a hand
 	// fill an array of multiple hands
@@ -264,13 +270,13 @@ int		txtToMask(StdDeck_CardMask *hands[], const char *txt) {
 		// convert index value to mask
 		currCard = StdDeck_MASK(index);
 		// add the card to the current hand
-		StdDeck_CardMask_OR(hands[handcount], hands[handcount], currCard);
+		//DBG StdDeck_CardMask_OR(hands[handcount], hands[handcount], currCard);
 
 		// two cards in this hand yet, iow, time for next hand?
-		if (cardcount++ == 2) {
+		if (++cardcount) {
 			cardcount = 0;
 			handcount++;
-			StdDeck_CardMask_RESET(hands[handcount]);
+			//DBG StdDeck_CardMask_RESET(hands[handcount]);
 		}
 	}
 
@@ -282,9 +288,16 @@ void	cleanInput(char *hand) {
 	int	i = 0;
 
 	while (hand[i] != 0) {
-		if (i%2 == 0)
-			hand[i] = toupper(hand[i]);
-		else
+		// newline character? end the string here
+		if (hand[i] == '\r' || hand[i] == '\n') {
+			hand[i] = 0;
+			continue;
+		}
+
+		hand[i] = toupper(hand[i]);
+		
+		// Is it a suit?
+		if (hand[i] == 'S' || hand[i] == 'C' || hand[i] == 'D' || hand[i] == 'H')
 			hand[i] = tolower(hand[i]);
 
 		i++;

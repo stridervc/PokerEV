@@ -1,6 +1,5 @@
 * Optionally specify starting hands on command line
 * Compilation instructions
-* Don't like that you have to type '.' for no board, should just hit enter, but scanf won't allow this. Need to find a better way.
 * Read input from file (Merrit's idea)
 * Omaha support
 ** How to handle wild cards in Omaha hands? Maybe use number? Eg: A1K1A2K2 would be AKAK double suited. Confusing for 9181A232
