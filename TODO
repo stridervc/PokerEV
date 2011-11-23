@@ -8,3 +8,4 @@
 ** What about stuff like AKs or AKo
 * Hand range support, eg: A?K?, A?A?, K?K?, 88+
 * Check math on split pots when more than two hands are involved
+* Option to show stats with 1 card to come, if calculating from the flop
