@@ -34,6 +34,8 @@
 
 #define MAXHANDS 10
 #define MAXHANDLEN 1000
+#define MAXBOARDLEN	20
+#define MAXRANGE 1326
 
 static const char *optString = "Oh?";		// command line arguments we support
 static const struct option longOpts[] = {	// long versions of options
@@ -42,6 +44,7 @@ static const struct option longOpts[] = {	// long versions of options
 	{ NULL, no_argument, NULL, 0 }
 };
 
+int		parsecmdline(int argc, char **argv, bool *showOdds);
 void 	evalSingleTrial(int numHands, StdDeck_CardMask hands[], StdDeck_CardMask userBoard, StdDeck_CardMask board, double wins[], double ties[], int *numberOfTrials);
 int		txtToMask(StdDeck_CardMask *hands[], const char *txt);
 void	cleanInput(char *hand);
@@ -50,36 +53,20 @@ void	display_version();
 
 int main(int argc, char **argv) {
 
-	char 				handstr[MAXHANDS][MAXHANDLEN];	// Array of hands read from user input (max 10)
-	char				boardstr[MAXHANDS];				// Comunity cards read from user input
-	StdDeck_CardMask	hands[MAXHANDS], board;			// CardMask versions of user input
+	char 				handstr[MAXHANDS][MAXHANDLEN];		// Array of hands read from user input (max 10)
+	StdDeck_CardMask	hands[MAXHANDS][MAXRANGE];			// Array of players with hands in their ranges 
+	int					handsinrange[MAXHANDS][MAXRANGE];	// Number of hands in each players range
+
+	char				boardstr[MAXBOARDLEN];			// Comunity cards read from user input
+	StdDeck_CardMask	board;							// CardMask versions of user input
 	StdDeck_CardMask 	deadCards;						// Cards that shouldn't be in the deck
 	int					numHands;						// Number of hands the user supplied
 	int					i;								// The std looping variable
-	int					opt;							// For getopt
-	int					longIndex;						// For getopt
 	bool				showOdds = false;				// Display odds instead of percentages?
 
-	// Process command line arguments
-	opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
-
-	while (opt != -1) {
-		switch (opt) {
-			case 'O':	// display odds instead of percentages
-				showOdds = true;
-				break;
-
-			case 'h':
-			case '?':
-				display_help(argv[0]);
-				return(0);
-
-			default:
-				break;
-		}
-
-		opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
-	}
+	i = parsecmdline(argc, argv, &showOdds);
+	if (i)
+		return i;
 
 	// Keep reading hands from the user until done, or until we reach 10 hands
 	i = 0;
@@ -91,7 +78,7 @@ int main(int argc, char **argv) {
 
 		fgets(handstr[i], MAXHANDLEN, stdin);
 
-		// break on '.' or enter with no input
+		// stop asking for hands on '.' or enter with no input
 		if (handstr[i][0] == '.' || strlen(handstr[i]) == 1)
 			break;
 
@@ -104,9 +91,9 @@ int main(int argc, char **argv) {
 	/* DBG
 	// Ask the user for community cards
 	StdDeck_CardMask_RESET(board);
-	printf("Board (. for none) : ");
-	scanf("%s", boardstr);
-	if (boardstr[0] != '.') {
+	printf("Board (ENTER for none) : ");
+	fgets(boardstr, MAXBOARDLEN, stdin);
+	if (boardstr[0] != '.' && strlen(boardstr) != 1) {
 		cleanInput(boardstr);
 		board = txtToMask(boardstr);
 	}
@@ -180,6 +167,35 @@ int main(int argc, char **argv) {
 		}
 
 	*/
+	return 0;
+}
+
+// Deal with command line arguments, returns 0 if program should continue, else an error code
+int		parsecmdline(int argc, char **argv, bool *showOdds) {
+
+	int	opt;		
+	int	longIndex;
+
+	opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
+
+	while (opt != -1) {
+		switch (opt) {
+			case 'O':	// display odds instead of percentages
+				*showOdds = true;
+				break;
+
+			case 'h':
+			case '?':
+				display_help(argv[0]);
+				return 1;
+
+			default:
+				break;
+		}
+
+		opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
+	}
+	
 	return 0;
 }
 
