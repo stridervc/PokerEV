@@ -32,7 +32,7 @@
 #include "poker_defs.h"
 #include "inlines/eval.h"
 
-#define MAXHANDS 10
+#define MAXPLAYERS 10
 #define MAXHANDLEN 1000
 #define MAXBOARDLEN	20
 #define MAXRANGE 1326
@@ -46,16 +46,16 @@ static const struct option longOpts[] = {	// long versions of options
 
 int		parsecmdline(int argc, char **argv, bool *showOdds);
 void 	evalSingleTrial(int numHands, StdDeck_CardMask hands[], StdDeck_CardMask userBoard, StdDeck_CardMask board, double wins[], double ties[], int *numberOfTrials);
-int		txtToMask(StdDeck_CardMask *hands[], const char *txt);
+int		txtToMask(StdDeck_CardMask hands[], const char *txt);
 void	cleanInput(char *hand);
 void	display_help(char *progname);
 void	display_version();
 
 int main(int argc, char **argv) {
 
-	char 				handstr[MAXHANDS][MAXHANDLEN];		// Array of hands read from user input (max 10)
-	StdDeck_CardMask	hands[MAXHANDS][MAXRANGE];			// Array of players with hands in their ranges 
-	int					handsinrange[MAXHANDS][MAXRANGE];	// Number of hands in each players range
+	char 				handstr[MAXPLAYERS][MAXHANDLEN];	// Array of hands read from user input (max 10)
+	StdDeck_CardMask	hands[MAXPLAYERS][MAXRANGE];		// Array of players with hands in their ranges 
+	int					handsinrange[MAXPLAYERS];			// Number of hands in each players range
 
 	char				boardstr[MAXBOARDLEN];			// Comunity cards read from user input
 	StdDeck_CardMask	board;							// CardMask versions of user input
@@ -68,9 +68,9 @@ int main(int argc, char **argv) {
 	if (i)
 		return i;
 
-	// Keep reading hands from the user until done, or until we reach 10 hands
+	// Keep reading hands from the user until done, or until we reach MAXPLAYERS hands
 	i = 0;
-	while (i < 10) {
+	while (i < MAXPLAYERS) {
 		printf("Hand %d ", i+1);
 		if (i >= 2)
 			printf("(ENTER for none) ");
@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
 			break;
 
 		cleanInput(handstr[i]);	
-		//DBG hands[i] = txtToMask(handstr[i]);
+		handsinrange[i] = txtToMask(hands[i], handstr[i]);
 		i++;
 	}
 	numHands = i;
@@ -257,7 +257,7 @@ void evalSingleTrial(int numHands, StdDeck_CardMask hands[], StdDeck_CardMask us
 // hands = array of hands in player's range
 // txt = txt string for hands, read from user
 // return value = number of hands found
-int		txtToMask(StdDeck_CardMask *hands[], const char *txt) {
+int		txtToMask(StdDeck_CardMask hands[], const char *txt) {
 	StdDeck_CardMask	currCard;		// current card mask
 	int					index;			// tmp card index value
 	char				card[3];		// temp string for a single card
