@@ -1,23 +1,51 @@
 /*
  * pokerev.c
- * Copyright 2011 Fred Strauss
  *
  * Calculates Poker EV
  *
- * TODO Add GPL license here
+ * Copyright 2011-2012 Fred Strauss
+ *
+ * This program is distributed under the terms of the GNU General Public License.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+#define VERSION "0.1.3"
 
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <getopt.h>
+#include <stdbool.h>
 
 #include "poker_defs.h"
 #include "inlines/eval.h"
+
+static const char *optString = "Oh?";		// command line arguments we support
+static const struct option longOpts[] = {	// long versions of options
+    { "odds", no_argument, NULL, 'O' },
+    { "help", no_argument, NULL, 'h' },
+    { "version", no_argument, NULL, 0 },
+    { NULL, no_argument, NULL, 0 }
+};
 
 void 	evalSingleTrial(StdDeck_CardMask player1, StdDeck_CardMask player2, StdDeck_CardMask userBoard, StdDeck_CardMask board, 
 			double wins[], double ties[], int *numberOfTrials);
 StdDeck_CardMask	txtToMask(const char *txt);
 void	cleanInput(char *hand);
+void	display_help(char *progname);
+void	display_version();
 
 int main(int argc, char **argv) {
 
@@ -26,7 +54,36 @@ int main(int argc, char **argv) {
 	char				hand2str[10];
 	char				boardstr[10];
 	StdDeck_CardMask	hand1, hand2, board;
+	int					i;					// The std looping variable
+	int					opt;				// For getopt
+	int					longIndex;			// For getopt
+	bool				showOdds = false;	// Display odds instead of percentages?
 
+	// Process command line arguments
+	opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
+
+	while (opt != -1) {
+		switch (opt) {
+			case 'O':	// display odds instead of percentages
+				showOdds = true;
+				break;
+
+			case 'h':
+			case '?':
+				display_help(argv[0]);
+				return(0);
+
+			case 0:
+				if (strcmp("version",longOpts[longIndex].name) == 0) {
+					display_version();
+					return 0;
+				}
+			default:
+				break;
+		}
+
+		opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
+	}
 	printf("Hand 1 : ");
 	scanf("%s", hand1str);
 	cleanInput(hand1str);
@@ -83,6 +140,8 @@ int main(int argc, char **argv) {
 	double h2Ties = (ties[1] / numberOfTrials) * 100.0;
 
 	printf("\r\n");
+	display_version();
+
 	if (StdDeck_numCards(board))
 		printf("Board : %s\r\n\r\n", boardstr);
 
@@ -119,7 +178,6 @@ void evalSingleTrial(StdDeck_CardMask player1, StdDeck_CardMask player2, StdDeck
 	(*numberOfTrials)++;
 }
 
-
 // Converts plaintext to cardmask
 StdDeck_CardMask	txtToMask(const char *txt) {
 	StdDeck_CardMask	hand;		// the hand to return
@@ -150,7 +208,6 @@ StdDeck_CardMask	txtToMask(const char *txt) {
 	return hand;
 }
 
-
 // Tidies up user input for a hand
 void	cleanInput(char *hand) {
 	int	i = 0;
@@ -163,4 +220,21 @@ void	cleanInput(char *hand) {
 
 		i++;
 	}
+}
+
+// Display help text
+void	display_help( char *progname) {
+	display_version();
+	printf("Usage: %s [OPTION]...\r\n\r\n", progname);
+	printf("OPTION can be:\r\n");
+	//printf("\t-o, --omaha\tCalculate odds for Omaha\r\n");
+	printf("\t-O, --odds\tDisplay odds as well as percentages\r\n");
+	printf("\t-h, -?, --help\tHelp\r\n");
+	printf("\t--version\tDisplay version and exit\r\n");
+	printf("\r\n");
+}
+
+void	display_version() {
+	printf("PokerEV version %s\r\n", VERSION);
+	printf("\r\n");
 }
