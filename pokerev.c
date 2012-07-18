@@ -34,7 +34,7 @@
 
 static const char *optString = "Oh?";		// command line arguments we support
 static const struct option longOpts[] = {	// long versions of options
-    { "odds", no_argument, NULL, 'O' },
+//    { "odds", no_argument, NULL, 'O' },
     { "help", no_argument, NULL, 'h' },
     { "version", no_argument, NULL, 0 },
     { NULL, no_argument, NULL, 0 }
@@ -57,16 +57,18 @@ int main(int argc, char **argv) {
 	int					i;					// The std looping variable
 	int					opt;				// For getopt
 	int					longIndex;			// For getopt
-	bool				showOdds = false;	// Display odds instead of percentages?
+//	bool				showOdds = false;	// Display odds instead of percentages?
 
 	// Process command line arguments
 	opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
 
 	while (opt != -1) {
 		switch (opt) {
+			/*
 			case 'O':	// display odds instead of percentages
 				showOdds = true;
 				break;
+			*/
 
 			case 'h':
 			case '?':
@@ -228,7 +230,7 @@ void	display_help( char *progname) {
 	printf("Usage: %s [OPTION]...\r\n\r\n", progname);
 	printf("OPTION can be:\r\n");
 	//printf("\t-o, --omaha\tCalculate odds for Omaha\r\n");
-	printf("\t-O, --odds\tDisplay odds as well as percentages\r\n");
+	//printf("\t-O, --odds\tDisplay odds as well as percentages\r\n");
 	printf("\t-h, -?, --help\tHelp\r\n");
 	printf("\t--version\tDisplay version and exit\r\n");
 	printf("\r\n");
