@@ -32,7 +32,8 @@
 #include "poker_defs.h"
 #include "inlines/eval.h"
 
-static const char *optString = "Oh?";		// command line arguments we support
+//static const char *optString = "Oh?";		// command line arguments we support
+static const char *optString = "h?";		// command line arguments we support
 static const struct option longOpts[] = {	// long versions of options
 //    { "odds", no_argument, NULL, 'O' },
     { "help", no_argument, NULL, 'h' },
