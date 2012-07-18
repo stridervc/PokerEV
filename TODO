@@ -9,3 +9,5 @@
 * Wildcard support, eg: A?K? (or even AK) or ?? for a random hand
 ** What about stuff like AKs or AKo
 * Hand range support, eg: A?K?, A?A?, K?K? 
+* Fix hardcoded path to poker-eval in Makefile
+* Do away with include symlink to poker-eval headers

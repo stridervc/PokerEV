@@ -4,6 +4,7 @@ Inspired by Poker Stove
 
 Uses pokersource-eval library
 Thanks to http://www.codingthewheel.com/ for examples on how to use pokersource-eval library
+Specifically: http://www.codingthewheel.com/archives/a-pokersource-poker-eval-primer
 
 pokerev is a simple poker odds calculator for the linux command line.
 It's currently in very early stages. It can calculate odds for hold'em with 2 to 10 starting 
@@ -16,3 +17,11 @@ Also no spaces between cards in a hand or on the board. For example, ace of spad
 ten of hearts would be given as AsTh
 A flop that consists of the king of clubs, queen of diamonds and 3 of spades would be: KcQd3s
 
+Installing poker-eval
+=====================
+* Download poker-eval from http://gna.org/projects/pokersource/
+* The one I use is http://download.gna.org/pokersource/sources/poker-eval-138.0.tar.gz
+* Compile and install poker-eval using it's instructions
+* If it doesn't install to /usr/local/lib/libpoker-eval.a on your system, edit the Makefile
+* Create a symlink to the headers: ln -s /usr/local/include/poker-eval/ include
+* make
