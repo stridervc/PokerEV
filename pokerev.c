@@ -88,21 +88,22 @@ int main(int argc, char **argv) {
 		opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
 	}
 	printf("Hand 1 : ");
-	scanf("%s", hand1str);
+	fgets(hand1str,10,stdin);
 	cleanInput(hand1str);
 	hand1 = txtToMask(hand1str);
 
 	printf("Hand 2 : ");
-	scanf("%s", hand2str);
+	fgets(hand2str,10,stdin);
 	cleanInput(hand2str);
 	hand2 = txtToMask(hand2str);
 
 	StdDeck_CardMask_RESET(board);
-	printf("Board (. for none) : ");
-	scanf("%s", boardstr);
-	if (boardstr[0] != '.') {
+	printf("Board (ENTER for none) : ");
+	if (fgets(boardstr,10,stdin)) {
 		cleanInput(boardstr);
 		board = txtToMask(boardstr);
+	} else {
+		boardstr[0] = 0;
 	}
 
 	int cardIndex = -1;
@@ -216,6 +217,11 @@ void	cleanInput(char *hand) {
 	int	i = 0;
 
 	while (hand[i] != 0) {
+		if (hand[i] == '\n') {
+			hand[i] = 0;
+			break;
+		}
+
 		if (i%2 == 0)
 			hand[i] = toupper(hand[i]);
 		else
