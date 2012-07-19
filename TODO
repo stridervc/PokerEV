@@ -1,7 +1,6 @@
 * Optionally specify starting hands on command line
 * Compilation instructions
 * Input multiple hands
-* Don't like that you have to type '.' for no board, should just hit enter, but scanf won't allow this. Need to find a better way.
 * Read input from file (Merrit's idea)
 * Wildcard support, eg: A?K? (or even AK) or ?? for a random hand
 ** What about stuff like AKs or AKo
