@@ -2,6 +2,7 @@ Version 1
 =========
 * Specify hands on command line
 * Create self tests
+* Move stable branch to master branch
 
 Future
 ======
