@@ -232,8 +232,9 @@ void	cleanInput(char *hand) {
 }
 
 // Display help text
-void	display_help( char *progname) {
+void	display_help(char *progname) {
 	display_version();
+	printf("Calculates equity for poker hands.\r\n\r\n");
 	printf("Usage: %s [OPTION]...\r\n\r\n", progname);
 	printf("OPTION can be:\r\n");
 	//printf("\t-o, --omaha\tCalculate odds for Omaha\r\n");
@@ -245,5 +246,4 @@ void	display_help( char *progname) {
 
 void	display_version() {
 	printf("PokerEV version %s\r\n", VERSION);
-	printf("\r\n");
 }

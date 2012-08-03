@@ -1,5 +1,10 @@
-* Optionally specify starting hands on command line
-* Compilation instructions
+Version 1
+=========
+* Specify hands on command line
+* Create self tests
+
+Future
+======
 * Input multiple hands
 * Read input from file (Merrit's idea)
 * Wildcard support, eg: A?K? (or even AK) or ?? for a random hand
