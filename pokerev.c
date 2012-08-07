@@ -32,12 +32,12 @@
 #include "poker_defs.h"
 #include "inlines/eval.h"
 
-//static const char *optString = "Oh?";		// command line arguments we support
 static const char *optString = "h?";		// command line arguments we support
 static const struct option longOpts[] = {	// long versions of options
-//    { "odds", no_argument, NULL, 'O' },
     { "help", no_argument, NULL, 'h' },
     { "version", no_argument, NULL, 0 },
+    { "hands", required_argument, NULL, 'c' },
+    { "board", required_argument, NULL, 'b' },
     { NULL, no_argument, NULL, 0 }
 };
 
@@ -58,23 +58,43 @@ int main(int argc, char **argv) {
 	int					i;					// The std looping variable
 	int					opt;				// For getopt
 	int					longIndex;			// For getopt
-//	bool				showOdds = false;	// Display odds instead of percentages?
+	bool				boardSupplied = false;
+	bool				handsSupplied = false;
 
 	// Process command line arguments
 	opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
 
 	while (opt != -1) {
 		switch (opt) {
-			/*
-			case 'O':	// display odds instead of percentages
-				showOdds = true;
-				break;
-			*/
-
 			case 'h':
 			case '?':
 				display_help(argv[0]);
 				return(0);
+
+			// board cards supplied
+			case 'b':
+				if (optarg) {
+					strcpy(boardstr,optarg);
+					boardSupplied = true;
+					StdDeck_CardMask_RESET(board);
+					cleanInput(boardstr);
+					board = txtToMask(boardstr);
+				}
+				break;
+
+			// player cards supplied
+			case 'c':
+				if (optarg) {
+					strcpy(hand1str, strtok(optarg,":"));
+					strcpy(hand2str, strtok(NULL,":"));
+					handsSupplied = true;
+
+					cleanInput(hand1str);
+					hand1 = txtToMask(hand1str);
+					cleanInput(hand2str);
+					hand2 = txtToMask(hand2str);
+				}
+				break;
 
 			case 0:
 				if (strcmp("version",longOpts[longIndex].name) == 0) {
@@ -87,23 +107,30 @@ int main(int argc, char **argv) {
 
 		opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
 	}
-	printf("Hand 1 : ");
-	fgets(hand1str,10,stdin);
-	cleanInput(hand1str);
-	hand1 = txtToMask(hand1str);
 
-	printf("Hand 2 : ");
-	fgets(hand2str,10,stdin);
-	cleanInput(hand2str);
-	hand2 = txtToMask(hand2str);
+	// prompt for hands if not supplied on command line
+	if (!handsSupplied) {
+		printf("Hand 1 : ");
+		fgets(hand1str,10,stdin);
+		cleanInput(hand1str);
+		hand1 = txtToMask(hand1str);
 
-	StdDeck_CardMask_RESET(board);
-	printf("Board (ENTER for none) : ");
-	if (fgets(boardstr,10,stdin)) {
-		cleanInput(boardstr);
-		board = txtToMask(boardstr);
-	} else {
-		boardstr[0] = 0;
+		printf("Hand 2 : ");
+		fgets(hand2str,10,stdin);
+		cleanInput(hand2str);
+		hand2 = txtToMask(hand2str);
+	}
+
+	// prompt for board if it wasn't supplied on command line
+	if (!boardSupplied) {
+		StdDeck_CardMask_RESET(board);
+		printf("Board (ENTER for none) : ");
+		if (fgets(boardstr,10,stdin)) {
+			cleanInput(boardstr);
+			board = txtToMask(boardstr);
+		} else {
+			boardstr[0] = 0;
+		}
 	}
 
 	int cardIndex = -1;
@@ -235,10 +262,10 @@ void	cleanInput(char *hand) {
 void	display_help(char *progname) {
 	display_version();
 	printf("Calculates equity for poker hands.\r\n\r\n");
-	printf("Usage: %s [OPTION]...\r\n\r\n", progname);
+	printf("Usage: %s [OPTION]\r\n\r\n", progname);
 	printf("OPTION can be:\r\n");
-	//printf("\t-o, --omaha\tCalculate odds for Omaha\r\n");
-	//printf("\t-O, --odds\tDisplay odds as well as percentages\r\n");
+	printf("\t--hands CARDS\tProvide player cards on command line, seperate players with :\r\n");
+	printf("\t--board CARDS\tProvide board (flop,[turn]) on command line\r\n");
 	printf("\t-h, -?, --help\tHelp\r\n");
 	printf("\t--version\tDisplay version and exit\r\n");
 	printf("\r\n");

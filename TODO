@@ -1,6 +1,7 @@
-Version 1
-=========
+Version 0.2.0
+=============
 * Specify hands on command line
+* Option to output in csv for easy parsing
 * Create self tests
 * Move stable branch to master branch
 
