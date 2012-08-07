@@ -175,6 +175,8 @@ int main(int argc, char **argv) {
 
 	if (StdDeck_numCards(board))
 		printf("Board : %s\r\n\r\n", boardstr);
+	else
+		printf("Board : None\r\n\r\n");
 
 	printf("       Equity     : Win        : Tie \r\n");
 	printf("%s : %8.4f %% : %8.4f %% : %8.4f %%\r\n", hand1str, h1Equity, h1Wins, h1Ties);
