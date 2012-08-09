@@ -48,13 +48,15 @@ int main(int argc, char **argv) {
 	int					i;					// The std looping variable
 	bool				handsSupplied = false;
 	bool				explicitInteractive = false;
+	bool				outputCSV = false;
 
 	// Command line arguments
-	static const char *optString = "hi?";		// short options
+	static const char *optString = "hi?c";		// short options
 	static const struct option longOpts[] = {	// long options
 	    { "help", no_argument, NULL, 'h' },
 	    { "version", no_argument, NULL, 0 },
-	    { "hands", required_argument, NULL, 'c' },
+	    { "csv", no_argument, NULL, 'c' },
+	    { "hands", required_argument, NULL, 'H' },
 	    { "board", required_argument, NULL, 'b' },
 	    { NULL, no_argument, NULL, 0 }
 	};
@@ -82,8 +84,8 @@ int main(int argc, char **argv) {
 				}
 				break;
 
-			// player cards supplied
-			case 'c':
+			// player hands supplied
+			case 'H':
 				if (optarg) {
 					strcpy(hand1str, strtok(optarg,":"));
 					strcpy(hand2str, strtok(NULL,":"));
@@ -96,6 +98,16 @@ int main(int argc, char **argv) {
 				}
 				break;
 
+			// force interactive
+			case 'i':
+				explicitInteractive = true;
+				break;
+
+			// output as csv
+			case 'c':
+				outputCSV = true;
+				break;
+
 			// display version
 			case 0:
 				if (strcmp("version",longOpts[longIndex].name) == 0) {
@@ -103,11 +115,6 @@ int main(int argc, char **argv) {
 					return 0;
 				}
 			
-			// force interactive
-			case 'i':
-				explicitInteractive = true;
-				break;
-
 			default:
 				break;
 		}
@@ -177,17 +184,26 @@ int main(int argc, char **argv) {
 	double h1Ties = (ties[0] / numberOfTrials) * 100.0;
 	double h2Ties = (ties[1] / numberOfTrials) * 100.0;
 
-	printf("\r\n");
-	display_version();
+	// normal output
+	if (!outputCSV) {
+		printf("\r\n");
+		display_version();
 
-	if (StdDeck_numCards(board))
-		printf("Board : %s\r\n\r\n", boardstr);
-	else
-		printf("Board : None\r\n\r\n");
+		if (StdDeck_numCards(board))
+			printf("Board : %s\r\n\r\n", boardstr);
+		else
+			printf("Board : None\r\n\r\n");
 
-	printf("       Equity     : Win        : Tie \r\n");
-	printf("%s : %8.4f %% : %8.4f %% : %8.4f %%\r\n", hand1str, h1Equity, h1Wins, h1Ties);
-	printf("%s : %8.4f %% : %8.4f %% : %8.4f %%\r\n", hand2str, h2Equity, h2Wins, h2Ties);
+		printf("       Equity     : Win        : Tie \r\n");
+		printf("%s : %8.4f %% : %8.4f %% : %8.4f %%\r\n", hand1str, h1Equity, h1Wins, h1Ties);
+		printf("%s : %8.4f %% : %8.4f %% : %8.4f %%\r\n", hand2str, h2Equity, h2Wins, h2Ties);
+
+	// CSV output
+	} else {
+		printf("# hand,equity %%,win %,tie %%\r\n");
+		printf("%s,%.4f,%.4f,%.4f\r\n", hand1str, h1Equity, h1Wins, h1Ties);
+		printf("%s,%.4f,%.4f,%.4f\r\n", hand2str, h2Equity, h2Wins, h2Ties);
+	}
 
 	return 0;
 }
@@ -276,6 +292,7 @@ void	display_help(char *progname) {
 	printf("\t--hands CARDS\tProvide player cards on command line, seperate players with :\r\n");
 	printf("\t--board CARDS\tProvide board (flop,[turn]) on command line\r\n");
 	printf("\t-i\t\tInteractive. Prompt for board even if --hands is supplied\r\n");
+	printf("\t-c, --csv\tOutput as csv\r\n");
 	printf("\t-h, -?, --help\tHelp\r\n");
 	printf("\t--version\tDisplay version and exit\r\n");
 	printf("\r\n");
