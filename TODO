@@ -1,8 +1,5 @@
 Version 0.2.0
 =============
-* Option to not prompt for board cards, even if --board not specified (non interactive pre-flop calculations)
-* Option to output in csv for easy parsing
-* Create self tests
 * Move stable branch to master branch
 
 Future

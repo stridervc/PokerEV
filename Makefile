@@ -13,5 +13,8 @@ $(EXECUTABLE): $(OBJECTS)
 .c.o:
 	$(CC) -I $(INCLUDEDIR) -c $< -o $@
 
+test: $(EXECUTABLE)
+	./selftest.sh
+
 clean:
 	rm -f $(EXECUTABLE) $(OBJECTS)
