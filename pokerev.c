@@ -32,15 +32,6 @@
 #include "poker_defs.h"
 #include "inlines/eval.h"
 
-static const char *optString = "h?";		// command line arguments we support
-static const struct option longOpts[] = {	// long versions of options
-    { "help", no_argument, NULL, 'h' },
-    { "version", no_argument, NULL, 0 },
-    { "hands", required_argument, NULL, 'c' },
-    { "board", required_argument, NULL, 'b' },
-    { NULL, no_argument, NULL, 0 }
-};
-
 void 	evalSingleTrial(StdDeck_CardMask player1, StdDeck_CardMask player2, StdDeck_CardMask userBoard, StdDeck_CardMask board, 
 			double wins[], double ties[], int *numberOfTrials);
 StdDeck_CardMask	txtToMask(const char *txt);
@@ -50,16 +41,27 @@ void	display_version();
 
 int main(int argc, char **argv) {
 
-	// Read two hands from keyboard
 	char 				hand1str[10];
 	char				hand2str[10];
 	char				boardstr[10];
 	StdDeck_CardMask	hand1, hand2, board;
 	int					i;					// The std looping variable
+	bool				handsSupplied = false;
+	bool				explicitInteractive = false;
+
+	// Command line arguments
+	static const char *optString = "hi?";		// short options
+	static const struct option longOpts[] = {	// long options
+	    { "help", no_argument, NULL, 'h' },
+	    { "version", no_argument, NULL, 0 },
+	    { "hands", required_argument, NULL, 'c' },
+	    { "board", required_argument, NULL, 'b' },
+	    { NULL, no_argument, NULL, 0 }
+	};
 	int					opt;				// For getopt
 	int					longIndex;			// For getopt
-	bool				boardSupplied = false;
-	bool				handsSupplied = false;
+
+	StdDeck_CardMask_RESET(board);	// clear board var
 
 	// Process command line arguments
 	opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
@@ -75,8 +77,6 @@ int main(int argc, char **argv) {
 			case 'b':
 				if (optarg) {
 					strcpy(boardstr,optarg);
-					boardSupplied = true;
-					StdDeck_CardMask_RESET(board);
 					cleanInput(boardstr);
 					board = txtToMask(boardstr);
 				}
@@ -96,11 +96,18 @@ int main(int argc, char **argv) {
 				}
 				break;
 
+			// display version
 			case 0:
 				if (strcmp("version",longOpts[longIndex].name) == 0) {
 					display_version();
 					return 0;
 				}
+			
+			// force interactive
+			case 'i':
+				explicitInteractive = true;
+				break;
+
 			default:
 				break;
 		}
@@ -122,7 +129,7 @@ int main(int argc, char **argv) {
 	}
 
 	// prompt for board if it wasn't supplied on command line
-	if (!boardSupplied) {
+	if (!handsSupplied || explicitInteractive) {
 		StdDeck_CardMask_RESET(board);
 		printf("Board (ENTER for none) : ");
 		if (fgets(boardstr,10,stdin)) {
@@ -268,6 +275,7 @@ void	display_help(char *progname) {
 	printf("OPTION can be:\r\n");
 	printf("\t--hands CARDS\tProvide player cards on command line, seperate players with :\r\n");
 	printf("\t--board CARDS\tProvide board (flop,[turn]) on command line\r\n");
+	printf("\t-i\t\tInteractive. Prompt for board even if --hands is supplied\r\n");
 	printf("\t-h, -?, --help\tHelp\r\n");
 	printf("\t--version\tDisplay version and exit\r\n");
 	printf("\r\n");
