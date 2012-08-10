@@ -1,14 +1,16 @@
 Version 0.2.0
 =============
 * Move stable branch to master branch
+* change version
 
 Future
 ======
 * Input multiple hands
-* Read input from file (Merrit's idea)
 * Wildcard support, eg: A?K? (or even AK) or ?? for a random hand
 ** What about stuff like AKs or AKo
 * Omaha support
 ** How to handle wild cards in Omaha hands? Maybe use number? Eg: A1K1A2K2 would be AKAK double suited. Confusing for 9181A232
 * Hand range support, eg: A?K?, A?A?, K?K? 
 * Do away with include symlink to poker-eval headers
+* Create manpage
+

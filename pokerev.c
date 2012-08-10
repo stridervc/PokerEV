@@ -289,7 +289,7 @@ void	display_help(char *progname) {
 	printf("Calculates equity for poker hands.\r\n\r\n");
 	printf("Usage: %s [OPTION]\r\n\r\n", progname);
 	printf("OPTION can be:\r\n");
-	printf("\t--hands CARDS\tProvide player cards on command line, seperate players with :\r\n");
+	printf("\t--hands CARDS\tProvide player cards on command line, separate players with :\r\n");
 	printf("\t--board CARDS\tProvide board (flop,[turn]) on command line\r\n");
 	printf("\t-i\t\tInteractive. Prompt for board even if --hands is supplied\r\n");
 	printf("\t-c, --csv\tOutput as csv\r\n");

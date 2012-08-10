@@ -16,5 +16,8 @@ $(EXECUTABLE): $(OBJECTS)
 test: $(EXECUTABLE)
 	./selftest.sh
 
+install: $(EXECUTABLE)
+	install -D pokerev /usr/local/bin
+
 clean:
 	rm -f $(EXECUTABLE) $(OBJECTS)
