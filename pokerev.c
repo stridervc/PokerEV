@@ -21,7 +21,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define VERSION "0.1.3"
+#define VERSION "0.2.0"
 
 #include <stdio.h>
 #include <string.h>
